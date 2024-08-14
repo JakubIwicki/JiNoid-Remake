@@ -5,15 +5,15 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WPFVisualBasic" d:DataContext="{d:DesignInstance Type=local:MainWindowViewModel}"
         mc:Ignorable="d"
-        Title="MainWindow" Height="415" Width="800">
+        Title="MainWindow" Height="1000" Width="600">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" MinWidth="400"/>
+            <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
         <Grid>
-            <ItemsControl ItemsSource="{Binding GameManager.BallShapes, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Width="{Binding Map.Width}" Height="{Binding Map.Height}" Background="{Binding Map.BackgroundColor}" VerticalAlignment="Top" Margin="5">
+            <ItemsControl ItemsSource="{Binding DrawManager.ShapeDrawables, UpdateSourceTrigger=PropertyChanged, Mode=OneWay}" Width="{Binding Map.Width}" Height="{Binding Map.Height}" Background="{Binding Map.BackgroundColor}" VerticalAlignment="Top" Margin="5">
                 <!-- ItemsPanelTemplate -->
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>

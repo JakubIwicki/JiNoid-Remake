@@ -1,6 +1,6 @@
 ﻿Public Class Map : Inherits BindableObject
 
-    Private _width As Double
+    Private _width As Double = 400
     Public Property Width As Double
         Get
             Return _width
@@ -12,7 +12,7 @@
     End Property
 
 
-    Private _height As Double
+    Private _height As Double = 800
     Public Property Height As Double
         Get
             Return _height
@@ -23,7 +23,7 @@
         End Set
     End Property
 
-    Private _backgroundColor As Brush
+    Private _backgroundColor As Brush = Brushes.LightGreen
     Public Property BackgroundColor As Brush
         Get
             Return _backgroundColor
@@ -35,9 +35,11 @@
     End Property
 
     Public Sub New()
-        BackgroundColor = Brushes.LightGreen
-        Width = 400
-        Height = 400
+    End Sub
+
+    Public Sub New(width As Double, height As Double)
+        Me.Width = width
+        Me.Height = height
     End Sub
 
 End Class

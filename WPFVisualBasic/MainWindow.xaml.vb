@@ -11,7 +11,7 @@ Class MainWindow
 
         'Hack for better performance
         AddHandler CompositionTarget.Rendering, Sub(s, e)
-                                                    ViewModel.GameManager.Draw()
+                                                    ViewModel.DrawManager.Draw()
                                                 End Sub
 
         ViewModel = New MainWindowViewModel(Dispatcher)
@@ -36,28 +36,41 @@ Class MainWindowViewModel : Inherits BindableObject
 
     Public Property Map As Map
         Get
-            Return _gameManager.Map
+            Return _gameManager.GameMap
         End Get
         Set
-            _gameManager.Map = Value
+            _gameManager.GameMap = Value
             OnPropertyChanged(NameOf(Map))
         End Set
     End Property
 
-    Public Sub New(ByRef dispatcher As Dispatcher)
-        _gameManager = New GameManager(New Map(), dispatcher).WithBalls(New Ball()).WithRackets(New Racket())
-    End Sub
+    Public Property DrawManager As DrawManager
 
-    Private _name As String = "Hello World!"
-    Public Property Name As String
-        Get
-            Return _name
-        End Get
-        Set
-            _name = Value
-            OnPropertyChanged(NameOf(Name))
-        End Set
-    End Property
+    Public Sub New(ByRef dispatcher As Dispatcher)
+        Dim initMap = New Map(400, 800)
+
+        Dim physicsManager = New PhysicsManager(initMap) _
+                        .WithBalls(GenerateRandomBalls(2, initMap)) _
+                        .WithRackets(GenerateMainRacket(initMap))
+
+        Dim userInputObjects = physicsManager.PhysicalObjects.OfType(Of IUserInput).ToList()
+        Dim drawableObjects = physicsManager.PhysicalObjects.OfType(Of DrawableObject).ToList()
+
+        Dim inputManager = New InputManager(userInputObjects)
+        Dim drawingManager = New DrawManager(dispatcher, drawableObjects, initMap)
+        Dim levelManager = New LevelManager()
+
+        Dim gm = New GameBuilder().
+                WithPhysicsManager(physicsManager).
+                WithInputManager(inputManager).
+                WithDrawManager(drawingManager).
+                WithLevelManager(levelManager).
+                WithMap(initMap).
+                Build()
+
+        Me.GameManager = gm
+        Me.DrawManager = drawingManager
+    End Sub
 
     Public ReadOnly Property StartCommand As ICommand
         Get

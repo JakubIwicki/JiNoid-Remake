@@ -1,46 +1,36 @@
-﻿Imports System.Runtime.CompilerServices
-Imports System.Threading
-Imports System.Windows.Threading
+﻿Imports System.Threading
 
-Class GameManager : Inherits BindableObject
-    Public Balls As New List(Of Ball)
-    Public Rackets As New List(Of Racket)
-    Public Map As Map
-    Public IsRunning As Boolean = False
+'Composite Pattern
+Public Class GameManager
+    Implements IGameObject
+
+    Public Property GameMap As Map
+    Public Property IsRunning As Boolean Implements IGameObject.IsRunning
+    Public Property Managers As New List(Of IGameObject)
 
     Private _gameThread As Thread
-    Private ReadOnly _dispatcher As Dispatcher
-    Private ReadOnly _gameTimer As DispatcherTimer
+    Public Sub New()
 
-    Public ReadOnly Property BallShapes As IEnumerable(Of Shape)
-        Get
-            Return Balls.Select(Function(b) b.Shape)
-        End Get
-    End Property
-
-    Public Sub New(ByRef map As Map, ByRef dispatcher As Dispatcher)
-        Me.Map = map
-        _dispatcher = dispatcher
-
-        _gameTimer = New DispatcherTimer With {
-            .Interval = TimeSpan.FromMilliseconds(60)
-        }
-        AddHandler _gameTimer.Tick, Sub() Update()
-
-        InitThread()
     End Sub
 
+    Public Sub New(ParamArray gameObjects As IGameObject())
+        Managers = New List(Of IGameObject)(gameObjects)
+    End Sub
     Private Sub InitThread()
         _gameThread = New Thread(
             Sub()
 
                 Try
-                    _gameTimer.Start()
+                    For Each manager In Managers
+                        manager.Start()
+                    Next
 
                     While IsRunning
                     End While
 
-                    _gameTimer.Stop()
+                    For Each manager In Managers
+                        manager.OnStop()
+                    Next
 
                 Catch ex As Exception
                     Return
@@ -51,52 +41,21 @@ Class GameManager : Inherits BindableObject
             End Sub) With {.Priority = ThreadPriority.Highest}
     End Sub
 
-    Public Sub Start()
+    Public Sub Start() Implements IGameObject.Start
         IsRunning = True
         InitThread()
         _gameThread.Start()
     End Sub
 
-    Private Sub Update()
-        For Each ball In Balls
-            ball.Move(Map)
+    Public Sub Update() Implements IGameObject.Update
+        '
+    End Sub
+
+    Public Sub OnStop() Implements IGameObject.OnStop
+        IsRunning = False
+        For Each manager In Managers
+            manager.OnStop()
         Next
     End Sub
 
-    Public Sub Draw()
-        _dispatcher.Invoke(Sub()
-                               For Each ball In Balls
-                                   ball.Draw(Map)
-                               Next
-                           End Sub)
-
-        OnPropertyChanged(NameOf(BallShapes))
-    End Sub
-
-    Public Sub OnStop()
-        IsRunning = False
-        'GameThread.Interrupt()
-    End Sub
-
 End Class
-
-
-
-'Builder pattern
-Module GameManagerExtensions
-
-    <Extension>
-    Public Function WithBalls(ByRef gm As GameManager, ParamArray balls() As Ball) As GameManager
-        gm.Balls.Clear()
-        gm.Balls.AddRange(balls)
-        Return gm
-    End Function
-
-    <Extension>
-    Public Function WithRackets(ByRef gm As GameManager, ParamArray rackets() As Racket) As GameManager
-        gm.Rackets.Clear()
-        gm.Rackets.AddRange(rackets)
-        Return gm
-    End Function
-
-End Module
